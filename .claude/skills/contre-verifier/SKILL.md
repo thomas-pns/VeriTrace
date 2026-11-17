@@ -36,8 +36,9 @@ Ce script ne renvoie que `id`, `type` et `affirmation` (ou `question`). N'ouvre 
    - `{{TEXTE}}` : l'affirmation ou la question extraite, telle quelle ;
    - `{{CLE}}` / `{{CLE_JSON}}` : « Affirmation » / `affirmation` (ou « Question » / `question`) ;
    - `{{TYPE}}` : `verification` ou `debat` ;
-   - `{{FICHIER_RESULTAT}}` : un chemin **hors du dépôt** (répertoire temporaire), par exemple `<scratchpad>/passe-aveugle-<id>.json`.
+   - `{{FICHIER_RESULTAT}}` : un fichier dans un **dossier neuf et vide, hors du dépôt**, par exemple `<scratchpad>/aveugle-<id>/passe.json`. Jamais un dossier qui contient des fichiers de travail : une copie de la fiche ou des notes d'une passe précédente casseraient l'aveugle.
 2. Envoie **uniquement la partie sous la ligne `---`** au sous-agent (outil `Agent`, type `general-purpose`), sans rien ajouter qui vienne de la fiche : ni statut, ni sujets, ni sources, ni ton propre avis.
+   Tu peux y ajouter une courte **note d'environnement** sans rapport avec la conclusion : quel interpréteur Python utiliser, et le fait que l'outil de lecture web ne peut pas ouvrir web.archive.org (passer par `curl -sL --compressed`).
 3. Attends la fin de la passe. Si le résultat commence par `AVEUGLE ROMPU`, la passe est **invalide** : relance un nouveau sous-agent, ou arrête-toi et dis-le à l'utilisateur.
 
 ## 4. Comparer
