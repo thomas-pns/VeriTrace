@@ -2,15 +2,12 @@
 #  - format : schéma, titres, citations, unicité des id — sur toute la base, à chaque PR.
 #  - sources : archives, extraits, liens d'origine — sur les fiches ajoutées ou modifiées par la PR.
 # Événement pull_request : jeton en lecture seule, aucun secret exposé aux forks.
+# Pas de filtre de chemins sur les PR : ces vérifications sont obligatoires pour fusionner,
+# elles doivent donc s'exécuter sur toutes les PR (sinon une PR sans fiche resterait bloquée).
 name: Fiches
 
 on:
   pull_request:
-    paths:
-      - "fiches/**"
-      - "schema/**"
-      - "scripts/**"
-      - ".github/workflows/fiches.yml"
   push:
     branches: [main]
     paths:
