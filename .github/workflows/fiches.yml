@@ -1,0 +1,73 @@
+# Vérification automatique des fiches proposées.
+#  - format : schéma, titres, citations, unicité des id — sur toute la base, à chaque PR.
+#  - sources : archives, extraits, liens d'origine — sur les fiches ajoutées ou modifiées par la PR.
+# Événement pull_request : jeton en lecture seule, aucun secret exposé aux forks.
+name: Fiches
+
+on:
+  pull_request:
+    paths:
+      - "fiches/**"
+      - "schema/**"
+      - "scripts/**"
+      - ".github/workflows/fiches.yml"
+  push:
+    branches: [main]
+    paths:
+      - "fiches/**"
+      - "schema/**"
+      - "scripts/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fiches-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: Format des fiches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - run: pip install -r scripts/requirements.txt
+      - name: Valider toutes les fiches
+        run: python scripts/valider_fiche.py fiches/
+
+  sources:
+    name: Sources (archives, extraits, liens)
+    if: github.event_name == 'pull_request'
+    needs: format
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - run: pip install -r scripts/requirements.txt pdfplumber
+      - name: Vérifier les sources des fiches ajoutées ou modifiées
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # -z / xargs -0 : les noms de fichiers venant d'une PR ne passent jamais par le shell.
+          git diff -z --name-only --diff-filter=AMR "$BASE_SHA" HEAD -- ':(glob)fiches/**/*.md' > modifiees
+          if [ ! -s modifiees ]; then
+            echo "Aucune fiche ajoutée ou modifiée."
+            exit 0
+          fi
+          xargs -0 -r python scripts/verifier_sources.py < modifiees

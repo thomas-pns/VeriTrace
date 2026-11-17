@@ -1,0 +1,5 @@
+jsonschema>=4.18
+PyYAML>=6.0
+requests>=2.31
+# Facultatif, pour vérifier les extraits dans les PDF :
+# pdfplumber>=0.11

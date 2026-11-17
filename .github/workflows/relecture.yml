@@ -1,0 +1,44 @@
+# Relecture humaine : 1 approbation, 2 si une fiche est sensible.
+# À déclarer comme vérification obligatoire (« Relecture humaine ») dans la protection de la branche main.
+#
+# Sécurité : le script exécuté est toujours celui de la branche de base (checkout de base.ref),
+# et il lit la PR uniquement via l'API GitHub. Aucun code de la PR n'est exécuté.
+# Pour un fork, l'événement pull_request_review utilise la définition du workflow présente dans la PR :
+# les dossiers .github/ et scripts/ doivent donc être couverts par CODEOWNERS (relecture d'un mainteneur).
+name: Relecture
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: relecture-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  relecture:
+    name: Relecture humaine
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - run: pip install -r scripts/requirements.txt
+      - name: Compter les approbations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: python scripts/relecture_requise.py --pr "$PR"

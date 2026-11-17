@@ -1,0 +1,10 @@
+# Les dossiers qui définissent les règles et la CI exigent la relecture d'un mainteneur :
+# une PR ne doit pas pouvoir modifier les contrôles qui la valident.
+# Activer « Require review from Code Owners » dans la protection de la branche main.
+
+/.github/          @thomas-pns
+/scripts/          @thomas-pns
+/schema/           @thomas-pns
+/.claude/          @thomas-pns
+/METHODE.md        @thomas-pns
+/CLAUDE.md         @thomas-pns

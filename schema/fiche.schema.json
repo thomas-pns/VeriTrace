@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/veritrace/veritrace/schema/fiche.schema.json",
+  "title": "Fiche VeriTrace",
+  "description": "Front-matter d'une fiche VeriTrace (vérification ou débat). Voir METHODE.md. Les dates sont des chaînes AAAA-MM-JJ : le validateur doit charger le YAML sans convertir les dates en objets.",
+  "type": "object",
+  "required": ["type", "id", "sujets", "sensible", "date_creation", "derniere_maj", "contre_verification", "sources"],
+  "properties": {
+    "type": {
+      "description": "verification : affirmation tranchable (4 blocs). debat : question sans réponse vrai/faux, sans verdict.",
+      "enum": ["verification", "debat"]
+    },
+    "id": {
+      "description": "Identifiant unique en kebab-case, identique au nom du fichier sans extension.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "affirmation": {
+      "description": "L'affirmation vérifiée, formulée telle qu'elle circule. Fiches de vérification uniquement.",
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "question": {
+      "description": "La question débattue. Fiches de débat uniquement.",
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "statut": {
+      "description": "Verdict global. Fiches de vérification uniquement.",
+      "enum": ["etabli", "faux", "trompeur", "non_prouve", "conteste", "a_revoir"]
+    },
+    "confiance": {
+      "description": "Solidité du statut global. Fiches de vérification uniquement.",
+      "enum": ["haute", "moyenne", "faible"]
+    },
+    "sujets": {
+      "description": "Tags de regroupement, en kebab-case.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+        "maxLength": 60
+      }
+    },
+    "sensible": {
+      "description": "true : deux relecteurs humains requis avant fusion.",
+      "type": "boolean"
+    },
+    "date_creation": { "$ref": "#/$defs/date" },
+    "derniere_maj": { "$ref": "#/$defs/date" },
+    "contre_verification": {
+      "description": "Résultat de la contre-vérification à l'aveugle (règle 7).",
+      "enum": ["ok", "divergence", "en_attente"]
+    },
+    "sources": {
+      "description": "Toutes les sources citées dans le corps, référencées par leur id ([S1], [S2]…).",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "additionalProperties": false,
+
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "verification" } } },
+      "then": {
+        "required": ["affirmation", "statut", "confiance"],
+        "not": { "required": ["question"] }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "debat" } } },
+      "then": {
+        "required": ["question"],
+        "not": {
+          "anyOf": [
+            { "required": ["affirmation"] },
+            { "required": ["statut"] },
+            { "required": ["confiance"] }
+          ]
+        }
+      }
+    },
+    {
+      "description": "Règle 7 : une divergence de contre-vérification impose le statut a_revoir.",
+      "if": {
+        "required": ["type", "contre_verification"],
+        "properties": {
+          "type": { "const": "verification" },
+          "contre_verification": { "const": "divergence" }
+        }
+      },
+      "then": {
+        "properties": { "statut": { "const": "a_revoir" } }
+      }
+    }
+  ],
+
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+      "format": "date"
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "url", "archive", "extraits", "type"],
+      "properties": {
+        "id": {
+          "description": "Identifiant local à la fiche : S1, S2…",
+          "type": "string",
+          "pattern": "^S[1-9]\\d*$"
+        },
+        "url": {
+          "description": "URL d'origine.",
+          "type": "string",
+          "pattern": "^https?://\\S+$",
+          "format": "uri"
+        },
+        "archive": {
+          "description": "Lien Wayback Machine horodaté.",
+          "type": "string",
+          "pattern": "^https://web\\.archive\\.org/web/\\d{8,14}[a-z_]*/\\S+$"
+        },
+        "extraits": {
+          "description": "Passages exacts cités, recopiés mot pour mot depuis la source. Un par point de la fiche qui s'appuie sur cette source.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["texte"],
+            "properties": {
+              "texte": {
+                "description": "Passage exact, court.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "localisation": {
+                "description": "Page, paragraphe, article, horodatage… pour retrouver le passage.",
+                "type": "string",
+                "maxLength": 200
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "type": {
+          "description": "Rang dans la hiérarchie des sources (règle 2). reseau_social : datation et traçage d'une rumeur uniquement, jamais preuve.",
+          "enum": ["primaire", "institutionnelle", "etude", "presse", "reseau_social"]
+        },
+        "titre": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "editeur": {
+          "description": "Institution, revue ou média qui publie la source (pas une personne privée).",
+          "type": "string",
+          "maxLength": 200
+        },
+        "date_publication": { "$ref": "#/$defs/date" },
+        "date_consultation": { "$ref": "#/$defs/date" },
+        "derive_de": {
+          "description": "Règle 3 : id d'une autre source dont celle-ci dépend (reprise, citation).",
+          "type": "string",
+          "pattern": "^S[1-9]\\d*$"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,60 @@
+# Chaque semaine, revérifie les sources de toute la base : une archive peut disparaître,
+# une source peut être modifiée ou retirée. Les problèmes sont regroupés dans une issue.
+name: Vérification périodique
+
+on:
+  schedule:
+    - cron: "0 5 * * 1"   # lundi, 5 h UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sources:
+    name: Sources de toute la base
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+      - run: pip install -r scripts/requirements.txt pdfplumber
+      - name: Vérifier les sources
+        id: verif
+        run: |
+          set +e
+          python scripts/verifier_sources.py fiches/ > rapport.txt 2>&1
+          code=$?
+          grep -v '^::' rapport.txt > rapport-lisible.txt
+          cat rapport-lisible.txt
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+      - name: Ouvrir ou compléter l'issue de suivi
+        if: steps.verif.outputs.code != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create sources-a-verifier --color D93F0B \
+            --description "Archive ou extrait introuvable lors de la vérification périodique" 2>/dev/null || true
+          {
+            echo "La vérification périodique du $(date -u +%F) a trouvé des erreurs ([journal]($RUN_URL))."
+            echo
+            echo '```'
+            grep -E '^(—|  ✗|      ERREUR)' rapport-lisible.txt || true
+            echo '```'
+            echo
+            echo "Une fiche dont une source n'est plus vérifiable doit être corrigée (nouvelle archive) ou repasser en \`a_revoir\`."
+          } > corps.md
+          numero=$(gh issue list --label sources-a-verifier --state open --json number --jq '.[0].number')
+          if [ -n "$numero" ]; then
+            gh issue comment "$numero" --body-file corps.md
+          else
+            gh issue create --title "Sources à vérifier" --label sources-a-verifier --body-file corps.md
+          fi
