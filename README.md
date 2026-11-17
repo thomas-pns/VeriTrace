@@ -104,6 +104,19 @@ python scripts/valider_fiche.py fiches/
 python scripts/verifier_sources.py fiches/verification/mon-id.md
 ```
 
+### Le site
+
+Le site public est construit à partir de `fiches/` avec [Astro](https://astro.build) et indexé par [Pagefind](https://pagefind.app) (recherche entièrement statique : aucun serveur, aucun cookie, aucun traceur). Il est publié sur GitHub Pages à chaque fusion dans `main`.
+
+```bash
+cd site
+npm ci
+npm run build     # site + index de recherche dans site/dist
+npm run preview   # http://localhost:4321/VeriTrace/
+```
+
+La recherche n'existe qu'après `npm run build` : en mode `npm run dev`, le reste du site fonctionne mais pas la recherche.
+
 ### Mise en place (mainteneurs)
 
 Dans *Settings → Branches*, protéger `main` :

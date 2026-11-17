@@ -1,0 +1,53 @@
+---
+import "../styles/global.css";
+import { DEPOT, lien } from "../lib/libelles";
+
+interface Props {
+  titre: string;
+  description?: string;
+  page?: "accueil" | "sujets" | "fiche";
+}
+const { titre, description = "Chaque affirmation, remontée à sa source. Base publique et open source de vérification citoyenne.", page } = Astro.props;
+const titreComplet = page === "accueil" ? "VeriTrace — chaque affirmation, remontée à sa source" : `${titre} — VeriTrace`;
+const canonique = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titreComplet}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonique} />
+    <meta property="og:title" content={titreComplet} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content={page === "fiche" ? "article" : "website"} />
+    <meta property="og:url" content={canonique} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href={lien("favicon.svg")} type="image/svg+xml" />
+    <slot name="tete" />
+  </head>
+  <body>
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+    <header class="entete">
+      <div class="conteneur">
+        <a class="marque" href={lien()}>Veri<span>Trace</span></a>
+        <nav class="nav" aria-label="Navigation principale">
+          <a href={lien()} aria-current={page === "accueil" ? "page" : undefined}>Rechercher</a>
+          <a href={lien("sujets/")} aria-current={page === "sujets" ? "page" : undefined}>Sujets</a>
+          <a href={`${DEPOT}/blob/main/METHODE.md`}>Méthode</a>
+          <a href={`${DEPOT}#contribuer`}>Contribuer</a>
+        </nav>
+      </div>
+    </header>
+    <main id="contenu" class="conteneur">
+      <slot />
+    </main>
+    <footer class="pied">
+      <div class="conteneur">
+        <p><strong>VeriTrace</strong> — « n'importe quoi, pas n'importe qui » : on vérifie des affirmations, jamais des personnes.</p>
+        <p>Fiches sous licence <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr">CC BY-SA 4.0</a> · code sous licence MIT · <a href={DEPOT}>dépôt GitHub</a>. Aucun cookie, aucun traceur.</p>
+      </div>
+    </footer>
+  </body>
+</html>

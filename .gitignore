@@ -6,3 +6,4 @@ node_modules/
 site/dist/
 site/.astro/
 .claude/settings.local.json
+.claude/launch.json

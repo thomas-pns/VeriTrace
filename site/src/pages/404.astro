@@ -1,0 +1,9 @@
+---
+import Base from "../layouts/Base.astro";
+import { lien } from "../lib/libelles";
+---
+<Base titre="Page introuvable">
+  <h1>Page introuvable</h1>
+  <p class="chapeau">Cette page n'existe pas, ou la fiche a changé d'adresse.</p>
+  <p><a href={lien()}>Rechercher une affirmation</a> · <a href={lien("sujets/")}>parcourir les sujets</a></p>
+</Base>
