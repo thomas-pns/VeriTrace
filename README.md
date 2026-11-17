@@ -113,4 +113,13 @@ Dans *Settings → Branches*, protéger `main` :
 
 ## Licence
 
-À définir. Les outils réutilisés gardent leur propre licence (par exemple ICIJ Datashare, AGPL-3.0).
+| Quoi | Licence | Fichier |
+|---|---|---|
+| **Code** : `scripts/`, `.claude/skills/`, `.github/`, `schema/`, `site/` | [MIT](https://opensource.org/license/mit) | [LICENSE](LICENSE) |
+| **Contenu** : `fiches/`, `METHODE.md`, `README.md` | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.fr) | [LICENSE-CONTENU.txt](LICENSE-CONTENU.txt) |
+
+Les fiches peuvent être reprises et modifiées partout, y compris commercialement, à condition de **citer VeriTrace** (avec un lien vers la fiche) et de publier les versions modifiées **sous la même licence**.
+
+- **Extraits cités** : les passages recopiés des sources (`extraits`) restent la propriété de leurs auteurs. Ils sont reproduits au titre du droit de citation (courtes citations, sources indiquées) et ne sont pas couverts par la licence CC BY-SA.
+- **Contributions** : en proposant une pull request, vous acceptez que votre contribution soit publiée sous ces mêmes licences.
+- **Outils tiers** : ils gardent leur propre licence (par exemple ICIJ Datashare, AGPL-3.0).
