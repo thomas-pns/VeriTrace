@@ -1,0 +1,18 @@
+---
+import Statut from "./Statut.astro";
+import { CONFIANCE, dateFr, intitule, lien, type Fiche } from "../lib/libelles";
+
+interface Props { fiche: Fiche; niveau?: "h2" | "h3" }
+const { fiche } = Astro.props;
+const { confiance, derniere_maj, sources } = fiche.data;
+---
+<li class="carte">
+  <div class="pastilles">
+    <Statut fiche={fiche} />
+    {confiance && <span class="etiquette">{CONFIANCE[confiance]}</span>}
+  </div>
+  <h3><a href={lien(`fiches/${fiche.id}/`)}>{intitule(fiche)}</a></h3>
+  <p class="meta">
+    {sources.length} source{sources.length > 1 ? "s" : ""} · mise à jour le {dateFr(derniere_maj)}
+  </p>
+</li>

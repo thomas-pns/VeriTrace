@@ -1,0 +1,13 @@
+---
+import { STATUTS, type Fiche } from "../lib/libelles";
+
+interface Props { fiche: Fiche; grand?: boolean }
+const { fiche, grand = false } = Astro.props;
+const { type, statut } = fiche.data;
+const cle = type === "debat" ? "debat" : statut ?? "non_prouve";
+const libelle = type === "debat" ? "Débat — sans verdict" : STATUTS[statut ?? "non_prouve"].libelle;
+const aide = type === "debat"
+  ? "Question sans réponse vrai/faux : positions, chiffrages et désaccords, sans verdict."
+  : STATUTS[statut ?? "non_prouve"].aide;
+---
+<span class={`statut statut-${cle}${grand ? " grand" : ""}`} title={aide}>{libelle}</span>

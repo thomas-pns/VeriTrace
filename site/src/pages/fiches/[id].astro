@@ -1,0 +1,107 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import Statut from "../../components/Statut.astro";
+import {
+  CONFIANCE, CONTRE_VERIF, DEPOT, STATUTS, TYPES_SOURCE,
+  dateFr, intitule, lien, sujetLisible, type Fiche,
+} from "../../lib/libelles";
+
+export async function getStaticPaths() {
+  const fiches = await getCollection("fiches");
+  return fiches.map((fiche) => ({ params: { id: fiche.id }, props: { fiche } }));
+}
+
+interface Props { fiche: Fiche }
+const { fiche } = Astro.props;
+const d = fiche.data;
+const titre = intitule(fiche);
+const ids = new Set(d.sources.map((s) => s.id));
+
+// Les renvois [S1] du corps deviennent des liens vers la source correspondante.
+// Le HTML vient des fiches du dépôt, validées par la CI et relues avant fusion.
+const corps = (fiche.rendered?.html ?? "").replace(/\[(S[1-9]\d*)\]/g, (m, id) =>
+  ids.has(id) ? `<a class="renvoi" href="#source-${id}" aria-label="Source ${id}">${id}</a>` : m,
+);
+
+const description = d.type === "debat"
+  ? `Fiche de débat VeriTrace : ${titre}`
+  : `${STATUTS[d.statut ?? "non_prouve"].libelle} — ${titre} Vérification sourcée et archivée.`;
+
+const contester = `${DEPOT}/issues/new?${new URLSearchParams({
+  title: `Contestation : ${d.id}`,
+  body: `Fiche : ${d.id}\n\nNouvelle preuve (URL d'origine, lien d'archive, passage exact) :\n\n`,
+})}`;
+const sourceFichier = `${DEPOT}/blob/main/fiches/${d.type}/${d.id}.md`;
+const historique = `${DEPOT}/commits/main/fiches/${d.type}/${d.id}.md`;
+---
+<Base titre={titre} description={description} page="fiche">
+  <article data-pagefind-body>
+    <p class="surtitre">{d.type === "debat" ? "Fiche de débat" : "Fiche de vérification"}</p>
+
+    <ul class="pastilles" aria-label="Verdict">
+      <li><Statut fiche={fiche} grand /></li>
+      {d.confiance && <li><span class="etiquette">{CONFIANCE[d.confiance]}</span></li>}
+    </ul>
+
+    <h1 class="affirmation" data-pagefind-meta="title">{titre}</h1>
+
+    {/* Filtres de recherche (invisibles) */}
+    <span hidden data-pagefind-filter="Verdict">{d.type === "debat" ? "Débat" : STATUTS[d.statut ?? "non_prouve"].libelle}</span>
+    {d.sujets.map((s) => <span hidden data-pagefind-filter="Sujet">{sujetLisible(s)}</span>)}
+
+    <dl class="meta-fiche" data-pagefind-ignore>
+      <dt>Sujets</dt>
+      <dd>
+        <span class="pastilles" style="margin:0">
+          {d.sujets.map((s) => <a class="etiquette" href={lien(`sujets/${s}/`)}>{sujetLisible(s)}</a>)}
+        </span>
+      </dd>
+      <dt>Contrôle</dt>
+      <dd>{CONTRE_VERIF[d.contre_verification]}{d.sensible && " · sujet sensible : deux relecteurs"}</dd>
+      <dt>Créée</dt>
+      <dd><time datetime={d.date_creation.toISOString().slice(0, 10)}>{dateFr(d.date_creation)}</time></dd>
+      <dt>Mise à jour</dt>
+      <dd><time datetime={d.derniere_maj.toISOString().slice(0, 10)}>{dateFr(d.derniere_maj)}</time> · <a href={historique}>historique</a></dd>
+    </dl>
+
+    <div class="corps" set:html={corps} />
+
+    <h2 id="sources">Sources</h2>
+    <p class="note" data-pagefind-ignore>
+      Chaque passage cité est recopié mot pour mot et archivé sur la Wayback Machine.
+      Si la page d'origine change ou disparaît, l'archive fait foi.
+    </p>
+    <ol class="sources">
+      {d.sources.map((s) => (
+        <li class="source" id={`source-${s.id}`}>
+          <div class="source-tete">
+            <span class="source-id">{s.id}</span>
+            <span class="source-titre">{s.titre ?? new URL(s.url).hostname}</span>
+            {s.editeur && <span class="source-editeur">{s.editeur}</span>}
+            <span class="etiquette">{TYPES_SOURCE[s.type]}</span>
+          </div>
+          <div class="source-liens" data-pagefind-ignore>
+            <a href={s.url} rel="noopener noreferrer">Source d'origine</a>
+            <a href={s.archive} rel="noopener noreferrer">Archive Wayback</a>
+            {s.date_publication && <span class="note">publiée le {dateFr(s.date_publication)}</span>}
+            {s.derive_de && <span class="note">reprend <a href={`#source-${s.derive_de}`}>{s.derive_de}</a></span>}
+          </div>
+          {s.extraits.map((x) => (
+            <blockquote class="extrait" cite={s.url} lang="und">
+              {x.texte}
+              {x.localisation && <cite>{x.localisation}</cite>}
+            </blockquote>
+          ))}
+        </li>
+      ))}
+    </ol>
+  </article>
+
+  <aside class="encadre" data-pagefind-ignore>
+    <h2>Une erreur, une nouvelle preuve ?</h2>
+    <p>Une fiche se conteste uniquement avec des preuves : URL d'origine, lien d'archive et passage exact.
+      Toute nouvelle preuve déclenche une revérification.</p>
+    <p><a href={contester}>Contester cette fiche</a> · <a href={sourceFichier}>voir le fichier source</a></p>
+  </aside>
+</Base>

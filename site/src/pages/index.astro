@@ -1,0 +1,68 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import CarteFiche from "../components/CarteFiche.astro";
+import { STATUTS, lien, parDate } from "../lib/libelles";
+
+const fiches = (await getCollection("fiches")).sort(parDate);
+const recentes = fiches.slice(0, 12);
+const nbSujets = new Set(fiches.flatMap((f) => f.data.sujets)).size;
+---
+<Base titre="Accueil" page="accueil">
+  <link slot="tete" rel="stylesheet" href={lien("pagefind/pagefind-component-ui.css")} />
+
+  <h1>Chaque affirmation, remontée à sa source.</h1>
+  <p class="chapeau">
+    Une base publique et open source qui dit, sur chaque affirmation qui circule, ce qui est prouvé,
+    ce qui est faux, ce qu'on ne sait pas — et pourquoi la rumeur tient.
+  </p>
+
+  <search class="recherche" aria-label="Rechercher une affirmation">
+    <pagefind-config bundle-path={lien("pagefind/")} lang="fr"></pagefind-config>
+    <pagefind-input placeholder="Rechercher une affirmation, un sujet, une source…"></pagefind-input>
+    <div class="recherche-filtres">
+      <pagefind-filter-dropdown filter="Verdict" label="Verdict"></pagefind-filter-dropdown>
+      <pagefind-filter-dropdown filter="Sujet" label="Sujet"></pagefind-filter-dropdown>
+    </div>
+    <pagefind-summary></pagefind-summary>
+    <pagefind-results max-sub-results="3"></pagefind-results>
+    <p class="recherche-repli" id="recherche-indisponible" hidden>
+      Index de recherche indisponible. En développement, lancer <code>npm run build</code> puis <code>npm run preview</code>.
+    </p>
+    <noscript><p class="recherche-repli">La recherche nécessite JavaScript. Vous pouvez parcourir les fiches <a href={lien("sujets/")}>par sujet</a>.</p></noscript>
+  </search>
+
+  <ul class="quatre">
+    <li><strong>Ce qui est établi</strong>preuves à l'appui, chaque point relié à sa source.</li>
+    <li><strong>Ce qui est faux</strong>et d'où vient l'erreur.</li>
+    <li><strong>Ce qu'on ne sait pas</strong>et pourquoi : caviardé, procédure en cours, données absentes…</li>
+    <li><strong>Pourquoi la rumeur tient</strong>première apparition datée, propagation, part de vrai déformée.</li>
+  </ul>
+
+  <h2>Dernières fiches</h2>
+  {recentes.length
+    ? <ul class="liste-fiches">{recentes.map((f) => <CarteFiche fiche={f} />)}</ul>
+    : <p class="vide">Aucune fiche publiée pour l'instant.</p>}
+  <p class="note">{fiches.length} fiche{fiches.length > 1 ? "s" : ""} · {nbSujets} sujet{nbSujets > 1 ? "s" : ""} · <a href={lien("sujets/")}>parcourir par sujet</a></p>
+
+  <section class="encadre">
+    <h2>Lire un verdict</h2>
+    <div class="legende">
+      {Object.entries(STATUTS).map(([cle, s]) => (
+        <>
+          <span class={`statut statut-${cle}`}>{s.libelle}</span>
+          <span>{s.aide}</span>
+        </>
+      ))}
+      <span class="statut statut-debat">Débat</span>
+      <span>Question sans réponse vrai/faux : positions, chiffrages et désaccords, sans verdict.</span>
+    </div>
+  </section>
+
+  {/* Pagefind est généré après le build (npm run build) ; absent en mode dev. */}
+  <script
+    is:inline
+    src={lien("pagefind/pagefind-component-ui.js")}
+    onerror="document.getElementById('recherche-indisponible').hidden=false"
+  ></script>
+</Base>

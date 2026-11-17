@@ -1,0 +1,26 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import CarteFiche from "../../components/CarteFiche.astro";
+import { lien, parDate, sujetLisible, type Fiche } from "../../lib/libelles";
+
+export async function getStaticPaths() {
+  const fiches = await getCollection("fiches");
+  const sujets = [...new Set(fiches.flatMap((f) => f.data.sujets))];
+  return sujets.map((sujet) => ({
+    params: { sujet },
+    props: { fiches: fiches.filter((f) => f.data.sujets.includes(sujet)).sort(parDate) },
+  }));
+}
+
+interface Props { fiches: Fiche[] }
+const { sujet } = Astro.params;
+const { fiches } = Astro.props;
+const nom = sujetLisible(sujet!);
+---
+<Base titre={nom} page="sujets" description={`Fiches VeriTrace sur le sujet : ${nom}.`}>
+  <p class="surtitre"><a href={lien("sujets/")}>Sujets</a></p>
+  <h1>{nom}</h1>
+  <p class="chapeau">{fiches.length} fiche{fiches.length > 1 ? "s" : ""}.</p>
+  <ul class="liste-fiches">{fiches.map((f) => <CarteFiche fiche={f} />)}</ul>
+</Base>
