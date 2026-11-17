@@ -83,7 +83,7 @@ const historique = `${DEPOT}/commits/main/fiches/${d.type}/${d.id}.md`;
           </div>
           <div class="source-liens" data-pagefind-ignore>
             <a href={s.url} rel="noopener noreferrer">Source d'origine</a>
-            <a href={s.archive} rel="noopener noreferrer">Archive Wayback</a>
+            <a href={s.archive} rel="noopener noreferrer">{s.archive.startsWith("https://web.archive.org/") ? "Archive Wayback" : "Internet Archive"}</a>
             {s.date_publication && <span class="note">publiée le {dateFr(s.date_publication)}</span>}
             {s.derive_de && <span class="note">reprend <a href={`#source-${s.derive_de}`}>{s.derive_de}</a></span>}
           </div>
