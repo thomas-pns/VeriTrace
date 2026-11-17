@@ -26,6 +26,8 @@ _session.headers.update({"User-Agent": USER_AGENT, "Accept-Language": "fr,en;q=0
 _derniere_requete_archive = 0.0
 
 RE_ARCHIVE = re.compile(r"^https?://web\.archive\.org/web/(\d{8,14})([a-z_]*)/(.+)$")
+# Document hébergé par l'Internet Archive : la Wayback Machine ne le capture pas, il est lui-même une archive.
+RE_ITEM_INTERNET_ARCHIVE = re.compile(r"^https://archive\.org/(details|stream|download)/\S+$")
 
 
 # --------------------------------------------------------------------------- HTTP

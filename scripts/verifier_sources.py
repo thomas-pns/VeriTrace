@@ -54,13 +54,17 @@ def verifier_source(s: dict, sans_origine: bool) -> tuple[list[str], list[str]]:
 
     # --- archive
     dec = w.decomposer_archive(s["archive"])
-    if not dec:
+    if dec:
+        horodatage, url_archivee = dec
+        if not w.memes_urls(url_archivee, s["url"]):
+            avert.append(f"l'archive porte sur {url_archivee}, pas sur l'URL d'origine")
+        cible = w.url_archive(horodatage, url_archivee, brut=True)
+    elif w.RE_ITEM_INTERNET_ARCHIVE.match(s["archive"]):
+        cible = s["archive"]  # document hébergé par l'Internet Archive : il est lui-même l'archive
+    else:
         return [f"lien d'archive mal formé : {s['archive']}"], []
-    horodatage, url_archivee = dec
-    if not w.memes_urls(url_archivee, s["url"]):
-        avert.append(f"l'archive porte sur {url_archivee}, pas sur l'URL d'origine")
     try:
-        page = lire(w.url_archive(horodatage, url_archivee, brut=True))
+        page = lire(cible)
     except Exception as e:
         return [f"archive injoignable : {e}"], avert
     if page.statut != 200:

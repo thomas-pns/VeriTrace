@@ -125,9 +125,12 @@
           "format": "uri"
         },
         "archive": {
-          "description": "Lien Wayback Machine horodaté.",
+          "description": "Lien Wayback Machine horodaté. Exception : un document hébergé par l'Internet Archive (archive.org/details|stream|download/…) est lui-même une archive, que la Wayback Machine refuse de capturer ; son URL archive.org est alors acceptée.",
           "type": "string",
-          "pattern": "^https://web\\.archive\\.org/web/\\d{8,14}[a-z_]*/\\S+$"
+          "anyOf": [
+            { "pattern": "^https://web\\.archive\\.org/web/\\d{8,14}[a-z_]*/\\S+$" },
+            { "pattern": "^https://archive\\.org/(details|stream|download)/\\S+$" }
+          ]
         },
         "extraits": {
           "description": "Passages exacts cités, recopiés mot pour mot depuis la source. Un par point de la fiche qui s'appuie sur cette source.",

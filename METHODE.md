@@ -69,6 +69,8 @@ Pour un document long (PDF, rapport, décision), chaque extrait précise la **pa
 
 L'archive doit **réellement contenir** les passages cités : une capture vide, tronquée ou réduite à une page anti-robot ne compte pas.
 
+Exception : un document **hébergé par l'Internet Archive** (`https://archive.org/details/…`, `/stream/…`, `/download/…`), par exemple un livre ancien numérisé, est déjà une archive, et la Wayback Machine refuse de le capturer. Son adresse archive.org sert alors de lien d'archive.
+
 ### 7. Contre-vérification à l'aveugle
 
 - Une seconde passe (skill `contre-verifier`) refait la recherche **à partir de la seule affirmation**, sans voir la conclusion ni les sources de la première passe.
