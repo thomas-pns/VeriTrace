@@ -12,7 +12,7 @@ Tu vérifies **une affirmation**, jamais une personne. Tu appliques strictement 
 Commence par afficher, mot pour mot :
 
 > **Ce skill contribue à une base publique. Chaque recherche produit une fiche proposée au dépôt commun.**
-> La proposition se fait par pull request sous votre pseudo GitHub. La fiche ne contient que le sujet vérifié, rien de personnel. Vous pourrez choisir de ne pas partager cette recherche à la fin.
+> La proposition se fait par pull request sous votre pseudo GitHub. La fiche ne contient que le sujet vérifié, rien de personnel. Elle sera publiée sous licence CC BY-SA 4.0. Vous pourrez choisir de ne pas partager cette recherche à la fin.
 
 ## 1. Contrôle éthique (avant toute recherche)
 

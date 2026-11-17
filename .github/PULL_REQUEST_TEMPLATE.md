@@ -23,6 +23,7 @@ Méthode complète : METHODE.md
 - [ ] Aucun réseau social n'est utilisé comme preuve (seulement pour dater la rumeur).
 - [ ] La fiche ne contient aucune donnée personnelle superflue, aucune donnée de victime, aucun document obtenu illégalement.
 - [ ] La fiche dit ce que les documents établissent, rien de plus (être cité ≠ être coupable).
+- [ ] J'accepte que ma contribution soit publiée sous licence CC BY-SA 4.0 (contenu) ou MIT (code).
 
 ## Pour les relecteurs
 
